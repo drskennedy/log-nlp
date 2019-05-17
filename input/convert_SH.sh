@@ -6,14 +6,20 @@
 # as well as non alphabet sequences.
 #
 
-[[ $# -ne 1 ]] && echo "input file not given; argc == $#" &&  exit 1
+[[ $# -lt 1 ]] && echo "input file not given; argc == $#" &&  exit 1
 
 FILE=$1
-OUTFILE="sh_msg.txt"
+
+if [[ -n "${2}" ]]; then
+    OUTFILE="$2"
+else
+    OUTFILE="sh_msg.txt"
+fi
 
 [[ ! -f $FILE ]] && echo "$FILE doesn't exist" && exit 2
 
-egrep -v '[^a-zA-z]\+' $FILE | awk '{$1=$2=$4="";$3=$3" |";$5=$5" | ";$6=$6" | ";print}' | awk -F\| '{gsub(/[0-9.:{}(),-]+/,"",$4);print}' | awk '{$1=$1" | ";$2=$2" | ";$3=$3" | ";print}' > $OUTFILE
+#egrep -v '[^a-zA-Z]\+|httpd|VERSION' $FILE | sed 's/.* kernel:/&  /' | awk '{$1=$2=$4="";$3=$3" |";$5=$5" | ";$6=$6" | ";print}' | awk -F\| 'BEGIN {OFS="|"} {gsub(/[0-9.:{}(),-]+/,"",$4);print}' | awk '{$1=$1" | ";$2=$2" | ";$3=$3" | ";print}' > $OUTFILE
+egrep -v '[^a-zA-Z]\+|httpd|VERSION|datakeg|rsyslogd' $FILE | sed 's/.* kernel:/&  /' | awk '{$1=$2=$4="";$3=$3" |";$5=$5" | ";$6=$6" | ";print}' | sed 's/^[ ]*//' | awk -F\| 'BEGIN {OFS="|"} {gsub(/[0-9.:{}(),-]+/,"",$4);print}' > $OUTFILE
 
 [[ $? -ne 0 ]] && exit 3
 
